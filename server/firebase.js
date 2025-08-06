@@ -1,20 +1,17 @@
 // server/firebase.js
-const firebase = require("firebase/app");
-require("firebase/database");
+const admin = require("firebase-admin");
+const path = require("path");
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAkVMLKl23vU3mTpftcQ2qxwkTpmuyUjnU",
-  authDomain: "contact-form-portfolio-bc709.firebaseapp.com",
-  databaseURL: "https://contact-form-portfolio-bc709-default-rtdb.firebaseio.com",
-  projectId: "contact-form-portfolio-bc709",
-  storageBucket: "contact-form-portfolio-bc709.firebasestorage.app",
-  messagingSenderId: "1092396584493",
-  appId: "1:1092396584493:web:50ae69e43573edc42332a4",
-  measurementId: "G-FX8KVFZJD3"
-};
+// Load service account key (downloaded from Firebase Console)
+const serviceAccount = require(path.join(__dirname, "../serviceAccountKey.json")); // Adjust path if needed
 
-firebase.initializeApp(firebaseConfig);
+// Initialize Firebase Admin SDK
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://contact-form-portfolio-bc709-default-rtdb.firebaseio.com", // Your Realtime DB URL
+});
 
-const database = firebase.database();
+// Export database reference
+const database = admin.database();
 
 module.exports = database;
