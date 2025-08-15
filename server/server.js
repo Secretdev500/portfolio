@@ -5,8 +5,17 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Firebase database connection
-const db = require('./firebase'); // Make sure firebase.js is in the same folder
+
+// Nodemailer setup
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'yasircd2006@gmail.com', // your email
+    pass: 'ubtv qhbt ahgk swxn' // use Gmail App Password, not your main password
+  }
+});
 
 // Middleware to serve static frontend files
 app.use(express.static(path.join(__dirname, '../frontend')));
@@ -22,21 +31,21 @@ app.get(['/index', '/'], (req, res) => {
 app.post('/contact_form', (req, res) => {
   const formData = req.body;
 
-  // Save form data to Firebase Realtime Database
-  db.ref('contacts').push({
-    name: formData.name,
-    email: formData.email,
-    subject: formData.subject,
-    message: formData.message,
-    timestamp: new Date().toISOString()
-  })
-  .then(() => {
-    console.log('✅ Contact entry saved to Firebase');
+  // Email options
+  const mailOptions = {
+    from: formData.email,
+    to: 'yasircd2006@gmail.com',
+    subject: `Portfolio Contact Form: ${formData.subject || 'No Subject'}`,
+    text: `Name: ${formData.name}\nEmail: ${formData.email}\nSubject: ${formData.subject}\nMessage: ${formData.message}`
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error('❌ Error sending email:', error);
+      return res.status(500).send('Error sending email.');
+    }
+    console.log('✅ Email sent:', info.response);
     res.redirect('/thankyou.html');
-  })
-  .catch((err) => {
-    console.error('❌ Error saving to Firebase:', err);
-    res.status(500).send('Error saving contact entry.');
   });
 });
 
